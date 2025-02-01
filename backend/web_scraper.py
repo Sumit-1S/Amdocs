@@ -15,46 +15,44 @@ def google_search(query, num_results=3):
         print(f"Error during Google search: {e}")
     return results
 
-def fetch_article_paragraphs(url):
+def fetch_article_text(url):
     """
-    Fetch the article from the given URL and extract text from all <p> tags.
-    Returns the concatenated paragraph text if available, otherwise an empty string.
+    Fetch the article from the given URL and extract plain text from all <p> tags.
+    This function uses BeautifulSoup to strip away any embedded HTML and joins the text with a space.
     """
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Raise an error for bad status codes
+        response.raise_for_status()  # Raise error for bad status codes
         soup = BeautifulSoup(response.text, 'html.parser')
         paragraphs = soup.find_all('p')
-        # Only include paragraphs with non-empty text
-        article_text = "\n".join([para.get_text() for para in paragraphs if para.get_text().strip()])
-        return article_text
+        # For each paragraph, extract the text using a space as a separator and remove extra whitespace.
+        text = " ".join([para.get_text(separator=' ', strip=True) 
+                         for para in paragraphs if para.get_text(strip=True)])
+        return text
     except Exception as e:
         print(f"Error fetching data from {url}: {e}")
         return ""
 
 def main():
-    # Define your tags (keywords) here
+    # Define your tags (keywords)
     tags = ["budget", "2025", "Nirmala Sitharaman", "income tax", "announcements"]
-    # Build a search query from the tags
     search_query = " ".join(tags)
     print("Search Query:", search_query)
     
     # Get the first three search URLs
-    urls = google_search(search_query, num_results=3)
+    urls = google_search(search_query, num_results=1)
     print("\nFetched URLs:")
     for idx, url in enumerate(urls, 1):
         print(f"{idx}. {url}")
     
-    # Dictionary to store results (only URLs with available paragraph content)
+    # Dictionary to store the plain text content from each URL
     data = {}
-    
-    # Fetch article paragraphs from each URL and store them if available
     for url in urls:
-        article_text = fetch_article_paragraphs(url)
+        article_text = fetch_article_text(url)
         if article_text:
             data[url] = article_text
         else:
-            print(f"No paragraph content found for URL: {url}")
+            print(f"No article text found for URL: {url}")
     
     # Convert the dictionary to JSON text
     json_data = json.dumps(data, indent=4)
