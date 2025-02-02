@@ -20,6 +20,8 @@ import {
   Tooltip,
 } from "recharts";
 
+
+
 export default function Home() {
   const [articleUrl, setArticleUrl] = useState("");
   const [chatMessage, setChatMessage] = useState("");
@@ -82,21 +84,18 @@ export default function Home() {
           <OrbitControls enableZoom={false} enablePan={false} />
         </Canvas>
       </div>
-
+  
       <div className="container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center justify-center min-h-[80vh] space-y-8"
         >
-          <motion.h1
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="text-4xl md:text-6xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground"
-          >
+          {/* Title with Glowing Animation */}
+          <h1 className="text-4xl md:text-6xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground animate-glow">
             AI Fact Checker
-          </motion.h1>
-          
+          </h1>
+  
           <Card className="w-full max-w-4xl p-6 backdrop-blur-lg bg-background/80">
             <div className="space-y-6">
               {/* Article URL Input */}
@@ -116,7 +115,7 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-
+  
               {/* Analysis Results */}
               <AnimatePresence>
                 {analysisResult && (
@@ -133,27 +132,28 @@ export default function Home() {
                           <div>
                             <div className="flex justify-between mb-1">
                               <span className="text-sm">Credibility Score</span>
-                              <span className="text-sm font-medium">{analysisResult.credibilityScore}%</span>
+                              <span className="text-sm font-medium">
+                                {analysisResult.credibilityScore}%
+                              </span>
                             </div>
-                            <Progress value={analysisResult.credibilityScore} />
+                            <Progress
+                              value={analysisResult.credibilityScore}
+                            />
                           </div>
                           <div>
                             <div className="flex justify-between mb-1">
                               <span className="text-sm">Source Reliability</span>
-                              <span className="text-sm font-medium">{analysisResult.sourceReliability}%</span>
+                              <span className="text-sm font-medium">
+                                {analysisResult.sourceReliability}%
+                              </span>
                             </div>
-                            <Progress value={analysisResult.sourceReliability} />
-                          </div>
-                          <div>
-                            <div className="flex justify-between mb-1">
-                              <span className="text-sm">Bias Level</span>
-                              <span className="text-sm font-medium">{analysisResult.biasLevel}%</span>
-                            </div>
-                            <Progress value={analysisResult.biasLevel} />
+                            <Progress
+                              value={analysisResult.sourceReliability}
+                            />
                           </div>
                         </div>
                       </div>
-                      
+  
                       <div className="h-[200px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
@@ -168,7 +168,10 @@ export default function Home() {
                               dataKey="value"
                             >
                               {pieChartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={COLORS[index % COLORS.length]}
+                                />
                               ))}
                             </Pie>
                             <Tooltip />
@@ -177,16 +180,20 @@ export default function Home() {
                         </ResponsiveContainer>
                       </div>
                     </div>
-
+  
                     {/* Chat Interface */}
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Ask Questions About the Article</h3>
+                      <h3 className="text-lg font-semibold">
+                        Ask Questions About the Article
+                      </h3>
                       <div className="h-[200px] overflow-y-auto border rounded-lg p-4 space-y-4">
                         {chatMessages.map((message, index) => (
                           <div
                             key={index}
                             className={`flex ${
-                              message.role === "user" ? "justify-end" : "justify-start"
+                              message.role === "user"
+                                ? "justify-end"
+                                : "justify-start"
                             }`}
                           >
                             <div
@@ -216,7 +223,7 @@ export default function Home() {
                   </motion.div>
                 )}
               </AnimatePresence>
-
+  
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -227,10 +234,6 @@ export default function Home() {
                   <AlertTriangle className="h-4 w-4" />
                   <span>Verify sources before sharing</span>
                 </div>
-                <Button variant="ghost" size="sm">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share Results
-                </Button>
               </motion.div>
             </div>
           </Card>
@@ -238,4 +241,7 @@ export default function Home() {
       </div>
     </main>
   );
+  
+  
+  
 }
