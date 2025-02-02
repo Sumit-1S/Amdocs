@@ -1,71 +1,57 @@
 import requests
-import json
 from bs4 import BeautifulSoup
-from googlesearch import search  # pip install googlesearch-python
+import subprocess
+import json
 
-def google_search(query, num_results=3):
+def fetch_article_title(url):
     """
-    Use the googlesearch module to fetch the first `num_results` URLs for the given query.
-    """
-    results = []
-    try:
-        for url in search(query, num_results=num_results, lang='en'):
-            results.append(url)
-    except Exception as e:
-        print(f"Error during Google search: {e}")
-    return results
-
-def fetch_article_paragraphs(url):
-    """
-    Fetch the article from the given URL and extract text from all <p> tags.
-    Returns the concatenated paragraph text if available, otherwise an empty string.
+    Fetch the article from the given URL and extract the title.
+    Returns the title text if available, otherwise an empty string.
     """
     try:
         response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad status codes
         soup = BeautifulSoup(response.text, 'html.parser')
-        paragraphs = soup.find_all('p')
-        # Only include paragraphs with non-empty text
-        article_text = "\n".join([para.get_text() for para in paragraphs if para.get_text().strip()])
-        return article_text
+        title = soup.title.string if soup.title else ''
+        return title.strip()
     except Exception as e:
         print(f"Error fetching data from {url}: {e}")
         return ""
 
+def chunk_text(text, chunk_size=5):
+    """
+    Split the text into chunks of specified size.
+    """
+    words = text.split()
+    return [' '.join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
+
 def main():
-    # Define your tags (keywords) here
-    tags = ["budget", "2025", "Nirmala Sitharaman", "income tax", "announcements"]
-    # Build a search query from the tags
-    search_query = " ".join(tags)
-    print("Search Query:", search_query)
+    # Prompt the user for the article URL
+    article_url = input("Enter the article URL: ").strip()
     
-    # Get the first three search URLs
-    urls = google_search(search_query, num_results=3)
-    print("\nFetched URLs:")
-    for idx, url in enumerate(urls, 1):
-        print(f"{idx}. {url}")
+    # Fetch the article title
+    title = fetch_article_title(article_url)
+    if not title:
+        print("Failed to retrieve the article title.")
+        return
     
-    # Dictionary to store results (only URLs with available paragraph content)
-    data = {}
+    # Create chunks from the title
+    chunks = chunk_text(title)
     
-    # Fetch article paragraphs from each URL and store them if available
-    for url in urls:
-        article_text = fetch_article_paragraphs(url)
-        if article_text:
-            data[url] = article_text
-        else:
-            print(f"No paragraph content found for URL: {url}")
-    
-    # Convert the dictionary to JSON text
-    json_data = json.dumps(data, indent=4)
-    
-    # Print the JSON data for debugging purposes
-    print("\nJSON Data from search results:")
-    print(json_data)
-    
-    # Optionally, save the JSON data to a file
-    with open("search_results.json", "w", encoding="utf-8") as f:
-        f.write(json_data)
+    # Convert chunks to JSON string
+    chunks_json = json.dumps(chunks)
+    print(chunks)
+    # Call web_scraper.py and pass the chunks as an argument
+    try:
+        result = subprocess.run(
+            ['python', 'web_scraper.py', chunks_json],
+            check=True,
+            text=True,
+            capture_output=True
+        )
+        print("web_scraper.py output:", result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"Error calling web_scraper.py: {e}")
 
 if __name__ == "__main__":
     main()
