@@ -6,7 +6,7 @@ import web_scraper
 import requests
 import os
 from openai import OpenAI
-import os
+import re
 
 app = Flask(__name__)
 CORS(app) 
@@ -40,13 +40,32 @@ def process_article():
         {"role": "user", "content": chunk_prompt}
     ])
     
-    keywords = completion.choices[0].message.content.strip().split(",")
+    message_content = completion.choices[0].message.content
+    json_content = re.sub(r'^```json\n|```$', '', message_content.strip())
+
+    # Now, 'json_content' should be a clean JSON string
+    keywords = json_content.split(",")
     keywords = [kw.strip() for kw in keywords if kw]
-    print(keywords)
 
     # Evaluate credibility score and source reliability
+    top_news_channels = ["indiatoday", "timesofindia", "hindustantimes", "zeenews", "ndtv", "thehindu"]
+    mid_news_channels = ["news18", "indianexpress", "republicworld", "firstpost", "scroll", "theprint"]
+    low_news_channels = ["opindia", "swarajyamag", "siasat", "thequint", "thewire", "newslaundry"]
+    
     credibility_score, source_reliability, collected_data = web_scraper.evaluate_chunks(keywords)
-
+    
+    article_link = article_link.removeprefix("https://")
+    news_outlet = article_link.split(".")[0]
+    
+    if news_outlet in top_news_channels:
+        source_reliability = 100
+    elif news_outlet in mid_news_channels:
+        source_reliability = 50
+    elif news_outlet in low_news_channels:
+        source_reliability = 30
+    else:
+        source_reliability = 0
+    
     response = {
         "credibilityScore": credibility_score,
         "reliabilityScore": source_reliability,
@@ -56,7 +75,7 @@ def process_article():
     return response
 
 @app.route('/chat', methods=['POST'])
-def talk(input_query):
+def talk():
     data = request.get_json()
     input_query = data.get('input_query')
 

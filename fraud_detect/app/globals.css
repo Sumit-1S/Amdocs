@@ -103,3 +103,23 @@
   -webkit-background-clip: text;
   animation: glow 3s linear forwards;
 }
+
+.loader{
+  display: inline-block;
+    color: white;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 0 8px #a6b9c6;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 8px white;
+  }
+  50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #535c62;
+  }
+}

@@ -23,6 +23,8 @@ import axios from 'axios';
 
 
 
+
+
 export default function Home() {
   const [articleUrl, setArticleUrl] = useState("");
   const [chatMessage, setChatMessage] = useState("");
@@ -31,7 +33,8 @@ export default function Home() {
   const [credibilityScore, setCredibilityScore] = useState<number >(0);
   const [reliabilityScore, setReliabilityScore] = useState<number >(0);
   const [noQuery, setNoQuery] = useState(true);
-  
+  const [gptResponse, setGptResponse] = useState('');
+
   
   const [chatMessages, setChatMessages] = useState<Array<{
     role: "user" | "assistant";
@@ -60,20 +63,33 @@ export default function Home() {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!chatMessage.trim()) return;
-    
+  
+    // Display the user's message in the chat
     setChatMessages([...chatMessages, { role: "user", content: chatMessage }]);
+    const currentMessage = chatMessage;
     setChatMessage("");
-    
-    // Simulate AI response
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, {
-        role: "assistant",
-        content: "Based on the article analysis, I can help answer your question. What specific aspects would you like to know more about?"
-      }]);
-    }, 1000);
+  
+    try {
+      // Send the user's message to the backend
+      const response = await axios.post('http://localhost:5000/chat', {
+        input_query: currentMessage,
+      });
+  
+      // Assuming the backend returns the AI's response in 'response.data'
+      const aiResponse = response.data;
+  
+      // Display the AI's response in the chat
+      setChatMessages(prev => [...prev, { role: "assistant", content: aiResponse }]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Optionally, display an error message in the chat
+      setChatMessages(prev => [...prev, { role: "assistant", content: "Sorry, there was an error processing your request." }]);
+    }
   };
+  
+  
 
   const pieChartData = credibilityScore ? [
     { name: "Factual", value: reliabilityScore },
@@ -124,7 +140,7 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-  
+              {isAnalyzing && <p className="loader">Analyzing article...</p>}
               {/* Analysis Results */}
               <AnimatePresence>
                 {noQuery===false && (

@@ -54,43 +54,50 @@ def evaluate_chunks(chunks):
     """
     credibility = 0
     num_queries = 0
+    total_sources = 0
     
     news_outlets = {
-        #"Times of India": "js_tbl_article",
-        #"The Hindu": "articlebodycontent",
-        "NDTV": "Art-exp_cn"
+        "Times of India": "js_tbl_article",
+        "The Hindu": "articlebodycontent",
+        "NDTV": "Art-exp_cn",
+        "Republic World": "storyContent",
     }
 
     # Dictionary to store the extracted content
     content_data = {}
 
     # Loop through each word in the chunks list
-   # for word in chunks:
+    for word in chunks:
         # Perform the search and get the first result
-    for outlet, class_name in news_outlets.items():
-        # Create the search query by appending the outlet name
-            search_query = f"{chunks} {outlet}"
-            print(f"Searching for: {search_query}")
-        
-        # Perform the search and get the first result
-            urls = google_search(search_query, num_results=1)
-            if urls:
-                url = urls[0]
-                print(f"Fetching article from: {url}")
-                # Fetch the article text
-                article_text = fetch_article_text(url, class_name)
-                if article_text:
-                    content_data[outlet] = {
-                        "url": url,
-                        "chunks": chunks
-                    }
+        for outlet, class_name in news_outlets.items():
+            # Create the search query by appending the outlet name
+                search_query = f"{word} {outlet}"
+                print(f"Searching for: {search_query}")
+            
+            # Perform the search and get the first result
+                urls = google_search(search_query, num_results=1)
+                if urls:
+                    num_queries += 1
+                    url = urls[0]
+                    print(f"Fetching article from: {url}")
+                    # Fetch the article text
+                    article_text = fetch_article_text(url, class_name)
+                    if article_text:
+                        credibility += 1
+                        content_data[outlet] = {
+                            "url": url,
+                            "chunks": chunks
+                        }
+                    else:
+                        print(f"Failed to extract content from {url}")
                 else:
-                    print(f"Failed to extract content from {url}")
-            else:
-                print(f"No search results found for {search_query}")
+                    print(f"No search results found for {search_query}")
 
     # Calculate credibility score
-    credibility_score = (credibility / num_queries) * 100 if num_queries > 0 else 0
+    if(num_queries > 0):
+        credibility_score = (credibility / num_queries) * 100
+    else:
+        credibility_score = 0
     reliability_score = 100  # As specified
 
     # Optionally, save the content data to a JSON file

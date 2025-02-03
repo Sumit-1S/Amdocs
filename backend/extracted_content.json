@@ -1,1 +1,22 @@
-{}
+{
+    "The Hindu": {
+        "url": "https://www.thehindu.com/opinion/op-ed/the-issue-of-indias-economic-growth-versus-emissions/article68962376.ece",
+        "chunks": [
+            "[\"Union Budget 2025\"",
+            "\"Nirmala Sitharaman\"",
+            "\"middle order\"",
+            "\"revive spending\"",
+            "\"India's economic growth\"]"
+        ]
+    },
+    "Republic World": {
+        "url": "https://www.republicworld.com/sports/cricket/india-s-middle-order-star-jemimah-rodrigues-breaks-into-top-20-in-icc-rankings-after-maiden-international-ton",
+        "chunks": [
+            "[\"Union Budget 2025\"",
+            "\"Nirmala Sitharaman\"",
+            "\"middle order\"",
+            "\"revive spending\"",
+            "\"India's economic growth\"]"
+        ]
+    }
+}
