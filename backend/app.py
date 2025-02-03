@@ -1,16 +1,17 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
 import chunk_creation
 import web_scraper
 import requests
+import os
 from openai import OpenAI
 
 app = Flask(__name__)
-CORS(app)  
-
+CORS(app) 
+load_dotenv()
 OPENAI_API_URL = "https://api.perplexity.ai/v1/complete"  
-OPENAI_API_KEY = "your_api_key_here"
-
+OPENAI_API_KEY = os.getenv('OPENAI_API')
 collected_data=[]
 
 @app.route('/', methods=['GET'])
@@ -49,19 +50,7 @@ def process_article():
         "credibilityScore": credibility_score,
         "reliabilityScore": source_reliability,
     }
-    
-    genai_prompt = "Take this info and store it. Don't return anything for now."
-    messages = [{"role": "system", "content": "You are a helpful assistant that remembers previous inputs."}]
-    
-    for chunk in collected_data:
-        new_prompt = f"{chunk} {genai_prompt}"
-        messages.append({"role": "user", "content": new_prompt})
-        
-        client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages  # Sends updated conversation history
-        )
-        
+  
     print(response)
     return response
 
@@ -74,10 +63,14 @@ def talk(input_query):
         return jsonify({"error": "Missing 'input_query'"}), 400
 
     client = OpenAI()
-    messages = [
-        {"role": "system", "content": "You are a helpful assistant that remembers previous inputs."},
-        {"role": "user", "content": input_query}
-    ]
+    genai_prompt = "Take this info and store it. Don't return anything for now."
+    messages = [{"role": "system", "content": "You are a helpful assistant that remembers previous inputs."}]
+    
+    for chunk in collected_data:
+        new_prompt = f"{chunk} {genai_prompt}"
+        messages.append({"role": "user", "content": new_prompt})
+        
+    messages.append({"role": "user", "content": genai_prompt})
     
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
