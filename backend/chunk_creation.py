@@ -1,7 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import subprocess
-import json
 
 def fetch_article_title(url):
     """
@@ -10,7 +8,7 @@ def fetch_article_title(url):
     """
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Raise an error for bad status codes
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         title = soup.title.string if soup.title else ''
         return title.strip()
@@ -25,33 +23,23 @@ def chunk_text(text, chunk_size=5):
     words = text.split()
     return [' '.join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
 
-def main():
-    # Prompt the user for the article URL
-    article_url = input("Enter the article URL: ").strip()
-    
-    # Fetch the article title
+def process_article_url(article_url):
+    """
+    Fetch the article title and create chunks from it.
+    """
     title = fetch_article_title(article_url)
     if not title:
         print("Failed to retrieve the article title.")
-        return
-    
-    # Create chunks from the title
+        return []
     chunks = chunk_text(title)
-    
-    # Convert chunks to JSON string
-    chunks_json = json.dumps(chunks)
-    print(chunks)
-    # Call web_scraper.py and pass the chunks as an argument
-    try:
-        result = subprocess.run(
-            ['python', 'web_scraper.py', chunks_json],
-            check=True,
-            text=True,
-            capture_output=True
-        )
-        print("web_scraper.py output:", result.stdout)
-    except subprocess.CalledProcessError as e:
-        print(f"Error calling web_scraper.py: {e}")
+    return chunks
 
-if __name__ == "__main__":
-    main()
+def main():
+    article_url = "https://timesofindia.indiatimes.com/india/unblemished-track-record-fm-sitharaman-on-why-moodys-has-not-changed-indias-ranking/articleshow/117859152.cms"
+    chunks = process_article_url(article_url)
+    
+    for chunk in chunks:
+        print(chunk)
+        
+if __name__ == '__main__':
+    main()        

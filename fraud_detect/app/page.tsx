@@ -19,19 +19,20 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
+import axios from 'axios';
 
 
 
 export default function Home() {
   const [articleUrl, setArticleUrl] = useState("");
   const [chatMessage, setChatMessage] = useState("");
+  const [userQuery, setUserQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<null | {
-    credibilityScore: number;
-    factualContent: number;
-    biasLevel: number;
-    sourceReliability: number;
-  }>(null);
+  const [credibilityScore, setCredibilityScore] = useState<number >(0);
+  const [reliabilityScore, setReliabilityScore] = useState<number >(0);
+  const [noQuery, setNoQuery] = useState(true);
+  
+  
   const [chatMessages, setChatMessages] = useState<Array<{
     role: "user" | "assistant";
     content: string;
@@ -39,16 +40,24 @@ export default function Home() {
 
   const handleAnalyzeArticle = async () => {
     setIsAnalyzing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setAnalysisResult({
-        credibilityScore: 85,
-        factualContent: 78,
-        biasLevel: 25,
-        sourceReliability: 90,
+    try {
+      // Send the article URL to the backend for processing
+      const response = await axios.post('http://localhost:5000/process', {
+        article_link: articleUrl,
       });
+
+      // Assuming the response contains the collected data as integers
+      const { credibilityScore, reliabilityScore } = response.data;
+      setNoQuery(false);
+      // Update the state with the analysis result
+      setCredibilityScore(credibilityScore);
+      setReliabilityScore(reliabilityScore);
+      console.log(credibilityScore, reliabilityScore);
+    } catch (error) {
+      console.error('Error analyzing article:', error);
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
+    }
   };
 
   const handleSendMessage = () => {
@@ -66,9 +75,9 @@ export default function Home() {
     }, 1000);
   };
 
-  const pieChartData = analysisResult ? [
-    { name: "Factual", value: analysisResult.factualContent },
-    { name: "Non-Factual", value: 100 - analysisResult.factualContent },
+  const pieChartData = credibilityScore ? [
+    { name: "Factual", value: reliabilityScore },
+    { name: "Non-Factual", value: 100 - reliabilityScore },
   ] : [];
 
   const COLORS = ["#4f46e5", "#e11d48"];
@@ -118,7 +127,7 @@ export default function Home() {
   
               {/* Analysis Results */}
               <AnimatePresence>
-                {analysisResult && (
+                {noQuery===false && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
@@ -133,22 +142,22 @@ export default function Home() {
                             <div className="flex justify-between mb-1">
                               <span className="text-sm">Credibility Score</span>
                               <span className="text-sm font-medium">
-                                {analysisResult.credibilityScore}%
+                                {credibilityScore}%
                               </span>
                             </div>
                             <Progress
-                              value={analysisResult.credibilityScore}
+                              value={credibilityScore}
                             />
                           </div>
                           <div>
                             <div className="flex justify-between mb-1">
                               <span className="text-sm">Source Reliability</span>
                               <span className="text-sm font-medium">
-                                {analysisResult.sourceReliability}%
+                                {reliabilityScore}%
                               </span>
                             </div>
                             <Progress
-                              value={analysisResult.sourceReliability}
+                              value={reliabilityScore}
                             />
                           </div>
                         </div>
