@@ -4,12 +4,13 @@ import chunk_creation
 import web_scraper
 import requests
 from openai import OpenAI
+import os
 
 app = Flask(__name__)
 CORS(app)  
 
-OPENAI_API_URL = "https://api.perplexity.ai/v1/complete"  
-OPENAI_API_KEY = "your_api_key_here"
+OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"  
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')    
 
 collected_data=[]
 
